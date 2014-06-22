@@ -16,3 +16,62 @@ function uppod_library() {
 
   return $libraries;
 }
+
+/**
+ * Implements hook_theme().
+ */
+function uppod_theme() {
+  return array(
+    'uppod' => array(
+      'variables' => array(
+        'file_object' => NULL,
+        'preset' => '',
+        'file_url' => '',
+        'file_mime' => '',
+        'options' => array(),
+      ),
+      'template' => 'theme/uppod',
+    ),
+  );
+}
+
+/**
+ * Implements hook_field_formatter_info().
+ */
+function uppod_field_formatter_info() {
+  $formatters = array(
+    'uppod' => array(
+      'label' => t('Uppod player'),
+      'field types' => array('file', 'video'),
+      'settings' => array(
+        'uppod_preset' => '',
+      ),
+    ),
+  );
+  return $formatters;
+}
+
+
+/**
+ * Implements hook_field_formatter_view().
+ */
+function uppod_field_formatter_view($entity_type, $entity, $field, $instance, $langcode, $items, $display) {
+  $element = array();
+
+  if ($display['type'] == 'uppod') {
+    // Process files for the theme function.
+    $files = array();
+    foreach ($items as $delta => $item) {
+      $files[$delta] = (object) $item;
+    }
+    foreach ($files as $delta => $file) {
+      $element[$delta] = array(
+        '#theme' => 'uppod',
+        '#file_object' => $file,
+        '#preset' => $display['settings']['uppod_preset'],
+      );
+    }
+  }
+  return $element;
+}
+
