@@ -1,0 +1,18 @@
+<?php
+
+/**
+ * Implements hook_library().
+ */
+function uppod_library() {
+  $libraries['uppod'] = array(
+    'title'   => 'Uppod Player',
+    'website' => 'http://uppod.ru/player',
+    'version' => '1.6.3',
+    'js'      => array(
+      libraries_get_path('uppod') . '/uppod.js' => array('preprocess' => FALSE),
+      libraries_get_path('uppod') . '/uppod_api.js' => array('preprocess' => FALSE),
+    ),
+  );
+
+  return $libraries;
+}

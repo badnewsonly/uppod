@@ -1,0 +1,7 @@
+name = Uppod
+description = Provides integration with the Uppod video player.
+core = 7.x
+
+dependencies[] = libraries
+files[] = uppod.module
+configure = admin/config/media/uppod
