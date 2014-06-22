@@ -5,10 +5,11 @@
  */
 function uppod_library() {
   $libraries['uppod'] = array(
-    'title'   => 'Uppod Player',
+    'title' => 'Uppod Player',
     'website' => 'http://uppod.ru/player',
     'version' => '1.6.3',
-    'js'      => array(
+    'js' => array(
+      'https://ajax.googleapis.com/ajax/libs/swfobject/2.2/swfobject.js' => array(),
       libraries_get_path('uppod') . '/uppod.js' => array('preprocess' => FALSE),
       libraries_get_path('uppod') . '/uppod_api.js' => array('preprocess' => FALSE),
     ),
@@ -48,6 +49,7 @@ function uppod_field_formatter_info() {
       ),
     ),
   );
+
   return $formatters;
 }
 
@@ -72,6 +74,77 @@ function uppod_field_formatter_view($entity_type, $entity, $field, $instance, $l
       );
     }
   }
+
   return $element;
 }
 
+/**
+ * Returns the default settings for Uppod Player. Used in cases where a preset is
+ * not provided when the Uppod Player theme function is called.
+ */
+function uppod_default_settings() {
+  $defaults = & drupal_static(__FUNCTION__);
+
+  if (!isset($defaults)) {
+    $defaults = array(
+      'flashplayer' => file_create_url(libraries_get_path('uppod') . '/uppod.swf'),
+      'width' => '480',
+      'height' => '360',
+      'autoplay' => FALSE,
+    );
+  }
+
+  return $defaults;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function uppod_preprocess_uppod(&$variables) {
+  // If a file object has been passed grab the file URL and MIME from it,
+  // but only if the values haven't already been set.
+  if (isset($variables['file_object'])) {
+    if (empty($variables['file_url'])) {
+      $variables['file_url'] = file_create_url($variables['file_object']->uri);
+    }
+    if (empty($variables['file_mime'])) {
+      $variables['file_mime'] = $variables['file_object']->filemime;
+    }
+    if (empty($variables['poster'])) {
+      $variables['poster'] = file_create_url($variables['file_object']->thumbnailfile->uri);
+    }
+  }
+
+  // Load defaults as the starting point.
+  $default_settings = uppod_default_settings();
+
+  $variables['html_id'] = 'uppod-' . md5(rand());
+
+  // Create a configuration array which will be passed to Uppod's JavaScript.
+  $variables['config'] = $default_settings;
+  $variables['config']['file'] = $variables['file_url'];
+  $variables['config']['poster'] = $variables['poster'];
+
+  $variables['modes'] = array(
+    'html5' => array('type' => 'html5'),
+    'swf' => array(
+      'type' => 'flash',
+      'src' => file_create_url(libraries_get_path('uppod') . '/uppod.swf'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_process_HOOK().
+ *
+ * Add the Uppod Player Javascript according to the method selected.
+ */
+function uppod_process_uppod(&$variables) {
+  drupal_add_library('uppod', 'uppod');
+  drupal_add_js(array(
+    'uppod' => array(
+      $variables['html_id'] => $variables['config'],
+      'modes' => $variables['modes'],
+    )
+  ), 'setting'); // Player settings
+}
