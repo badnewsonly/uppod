@@ -118,6 +118,18 @@ function uppod_preprocess_uppod(&$variables) {
   // Load defaults as the starting point.
   $default_settings = uppod_default_settings();
 
+  // Get any preset override options that were sent through the formatter or
+  // theme call.
+  $options = array();
+  if (isset($variables['options'])) {
+    $options = $variables['options'];
+    unset($variables['options']);
+  }
+
+  // Merge all variables together. Preset settings take priority over defaults,
+  // variables passed directly to the theme function take priority over both.
+  $variables = array_merge($default_settings, $options, $variables);
+
   $variables['html_id'] = 'uppod-' . md5(rand());
 
   // Create a configuration array which will be passed to Uppod's JavaScript.
