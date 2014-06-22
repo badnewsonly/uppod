@@ -4,4 +4,3 @@ core = 7.x
 
 dependencies[] = libraries
 files[] = uppod.module
-configure = admin/config/media/uppod
